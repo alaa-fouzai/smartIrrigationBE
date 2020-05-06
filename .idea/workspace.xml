@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c5d900ae-b4c1-4030-b2fa-b12278adcb53" name="Default Changelist" comment="" />
+    <list default="true" id="c5d900ae-b4c1-4030-b2fa-b12278adcb53" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Models/Sensor.js" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Sensor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/Users.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/Users.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/sensor.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/sensor.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +26,9 @@
         <option value="JavaScript File" />
       </list>
     </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1XhVzBvXyLR6MvzwN8FOQeBQyn5" />
   <component name="ProjectViewState">
@@ -104,6 +112,8 @@
       <workItem from="1588206959448" duration="5151000" />
       <workItem from="1588244981697" duration="607000" />
       <workItem from="1588389798396" duration="8183000" />
+      <workItem from="1588604792560" duration="2226000" />
+      <workItem from="1588641666714" duration="10956000" />
     </task>
     <servers />
   </component>
@@ -135,12 +145,12 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="277" y="56" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1581499340575" />
-    <state x="465" y="238" key="com.intellij.ide.util.TipDialog" timestamp="1588244980700">
+    <state x="465" y="238" key="com.intellij.ide.util.TipDialog" timestamp="1588641693374">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824/1920.0.1600.860@0.0.1536.824" timestamp="1587828653812" />
     <state x="2404" y="248" key="com.intellij.ide.util.TipDialog/0.0.1536.824/1920.0.1600.860@1920.0.1600.860" timestamp="1586106108439" />
-    <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1588244980700" />
+    <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1588641693374" />
     <state x="425" y="187" width="672" height="677" key="run.anything.popup" timestamp="1581498782841">
       <screen x="0" y="0" width="1536" height="824" />
     </state>

@@ -81,15 +81,15 @@ router.post('/login',async (req,res) =>
 router.post('/loginGmail',async (req,res) =>
 {
 
-    if (!req.body.res.email)
+    if (!req.body.resp.email)
     {
         res.json({status:"err" , message: 'email error'});
-        console.log(req.body.res.email);
+        console.log(req.body.resp.email);
         return ;
     }
     try{
         // await new Promise(resolve => setTimeout(resolve, 5000));
-        const NewUser =await User.find({ email : req.body.res.email  }).limit(1);
+        const NewUser =await User.find({ email : req.body.resp.email  }).limit(1);
         console.log(NewUser.length);
         if (NewUser.length < 1)
         {
@@ -115,14 +115,14 @@ router.post('/loginGmail',async (req,res) =>
     }
 });
 router.post('/RegisterGmail',async (req,res) => {
-    console.log(req.body.res);
-    if (!req.body.res.email)
+    console.log('New Request :',req.body);
+    if (!req.body.resp.email)
     {
         res.json({status:"err" , message: 'email error'});
-        console.log(req.body.res.email);
+        console.log(req.body.resp.email);
         return ;
     }
-    const NewUser =await User.find({ email : req.body.res.email  }).limit(1);
+    const NewUser =await User.find({ email : req.body.resp.email  }).limit(1);
     console.log(NewUser.length);
     if (NewUser.length > 0)
     {
@@ -130,14 +130,14 @@ router.post('/RegisterGmail',async (req,res) => {
         return ;
     }
     let user=new User({
-        FirstName : req.body.res.firstName,
-        LastName :req.body.res.lastName,
-        email :req.body.res.email,
+        FirstName : req.body.resp.firstName,
+        LastName :req.body.resp.lastName,
+        email :req.body.resp.email,
         password : '123123',
         enabled : true,
     });
     try{
-        const NewUser =await User.find({ email : req.body.email });
+        const NewUser =await User.find({ email : req.body.resp.email });
         if (NewUser === undefined || NewUser.length === 0 )
         {
             user=await user.save();

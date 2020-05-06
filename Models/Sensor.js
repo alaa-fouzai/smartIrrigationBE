@@ -1,14 +1,15 @@
 const mongoose=require('mongoose');
 const SensorsSchema= mongoose.Schema({
     name: {
-        type : String,
-        required : true
+        type : String
     },
     SensorIdentifier: {
         type : String,
+        required : true
     },
     SensorType: {
         type : String,
+        required : true
     },
     Description: {
         type : String,

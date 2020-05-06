@@ -26,6 +26,32 @@ function verifyToken(req, res, next) {
 
     next()
 }
+router.post('/find',verifyToken,async (req, res) =>
+{
+    try {
+        console.log('Sensorid',req.body.Sensorid);
+        user = await User.findById(req.userId);
+        if (!user) {
+            return res.json({status: "err", message: 'No User Found'});
+        }
+        Sens = new Sensor();
+        Sens = await Sensor.find({ SensorIdentifier : req.body.Sensorid }).select('-data');
+        if (Sens.length === 0) {
+            console.log('Sens :',Sens);
+            return res.json({status: "err", message: 'No Sensor Found !'});
+        }
+        Loc = await Location.find({ Sensor_ids : Sens[0]._id  });
+        console.log('loc',Loc.length);
+        console.log('Sens._id',Sens[0].name);
+        console.log('Sensor',Sens.length);
+        if (Loc.length === 0) {
+            return res.json({status: "ok", message: 'New Sensor have been Found !', SensorFoundId : Sens[0]._id});
+        }
+        return res.json({status: "err", message: 'Already in use'});
+    } catch (e) {
+        console.log(e);
+    }
+});
 
 router.post('/Add',verifyToken,async (req, res) =>
 {
@@ -40,17 +66,19 @@ router.post('/Add',verifyToken,async (req, res) =>
         if (!user) {
             return res.status(400).json({status: "err", message: 'No User Found'});
         }
-        let sensor = new Sensor();
-        sensor.name = req.body.SensorName;
-        sensor.Description = req.body.Description;
-        sensor.SensorType = req.body.SensorType;
-        sensor.SensorCoordinates = req.body.SensorCoordinates;
-        console.log(sensor);
-        if (sensor) {
-            console.log(sensor);
-            console.log("Sensor have been added !");
-            NewSensor = await sensor.save();
-            console.log(NewSensor._id);
+        Sens = await Sensor.findById( req.body.SensorId ).select('-data');
+        console.log('Sens :', Sens);
+        if (Sens) {
+            console.log('Sens :', Sens);
+            console.log('req.body.SensorName:', req.body.SensorName);
+            console.log('req.body.Description:', req.body.Description);
+            console.log('req.body.SensorCoordinates :', req.body.SensorCoordinates);
+            Sens.name = req.body.SensorName;
+            Sens.Description = req.body.Description;
+            Sens.SensorCoordinates = req.body.SensorCoordinates;
+            console.log('Loc :', Loc);
+            NewSensor = await Sens.save();
+            console.log('Sens 11111:',Sens._id);
             Loc.Sensor_ids.push(NewSensor._id);
             console.log(user);
             await Loc.save();
@@ -139,7 +167,7 @@ router.post('/remove',verifyToken,async (req,res) =>
         }
         console.log(Sens);
         console.log(Loc);
-        Sens.deleteOne();
+        // Sens.deleteOne();
         Loc = await Loc.save();
         res.json({status:"ok" , message: 'Sensor Deleted'});
     }catch (e) {
@@ -245,9 +273,9 @@ async function verify_kafka_data_message(x) {
         Sens = await Sensor.findOne({SensorIdentifier: y.SensorIdentifier});
         delete y.SensorIdentifier;
         y.time = Date.now();
-        // console.log('data',y);
-        //Sens.data.push(y);
-        //await Sens.save();
+        console.log('data',y);
+        Sens.data.push(y);
+        await Sens.save();
         return;
     }
     console.log('error', 'not valid data');
@@ -262,6 +290,36 @@ console.log(Sens.data);
 await Sens.save();
 return res.status(200).json({status: "ok", message: Sens});
 */
+router.post('/FactoryAdd',async (req, res) =>
+{
+    try {
+        console.log('req.body ',req.body);
+        Sens = await Sensor.findOne({SensorIdentifier: req.body.identifier});
+        if (Sens)
+        {
+            console.log("duplicate identifier");
+            return res.status(400).json({status: "err", message: 'duplicate identifier'});
+        }
+        console.log('sens :',req.body.identifier);
+        let sensor = new Sensor();
+        sensor.SensorIdentifier = req.body.identifier;
+        sensor.SensorType = req.body.SensorType;
+        console.log(sensor);
+        if (sensor) {
+            console.log(sensor);
+            console.log("Sensor have been added !");
+            NewSensor = await sensor.save();
+            console.log(NewSensor._id);
+            return res.json({status: "ok", message: 'New Sensor have been added !'});
+        }
+
+
+        console.log("error");
+        return res.status(400).json({status: "err", message: 'Some kind of error'});
+    } catch (e) {
+        console.log(e);
+    }
+});
 
 
 module.exports = router;
