@@ -1574,13 +1574,13 @@ const chat = io
     .of('/dashboard/IrrigationState')
     .on('connection', (socket) => {
         socket.on('getdata', async (message) => {
-            console.log('message ',message);
-            console.log('getdata', await getIrrigationState(message.LocationId, message.Accesstoken));
+            //console.log('message hello ',message);
+            //console.log('getdata', await getIrrigationState(message.LocationId, message.Accesstoken));
             socket.emit('getdata',  await getIrrigationState(message.LocationId, message.Accesstoken));
         });
 
         socket.on('changedata', (message) => {
-            console.log('change data');
+            //console.log('change data');
             ChangeIrrigationState(message.LocationId , message.Accesstoken, message.NewState);
         });
     });

@@ -177,6 +177,7 @@ router.post('/remove',verifyToken,async (req,res) =>
 });
 router.post('/AddSensorData',async (req, res) =>
 {
+    try {
     /*
     * send data like this
     *         {
@@ -193,9 +194,13 @@ router.post('/AddSensorData',async (req, res) =>
         delete req.body.SensorIdentifier;
         req.body.time =  Date.now() ;
         Sens.data.push(req.body);
-        console.log(Sens.data);
-        await Sens.save();
+        // console.log(Sens.data);
+        // await Sens.save();
+        AlertClients(req.body, Sens);
         return res.status(200).json({status: "ok", message: Sens});
+    } catch (e) {
+        console.log('error AddSensorData',e);
+    }
 });
 router.post('/dashboard',verifyToken,async (req, res) =>
 {
@@ -233,13 +238,14 @@ router.post('/dashboard',verifyToken,async (req, res) =>
     //await Sens.save();
     return res.status(200).json({status: "ok", message: data});
 });
+/*
 const sensor = io
     .of('/ensor')
     .on('connection', (socket) => {
         console.log('ensor connected', socket.id);
         socket.emit('item', { news: 'item' });
     });
-
+*/
 //get data from kafka
 
 try {
@@ -275,7 +281,8 @@ async function verify_kafka_data_message(x) {
         y.time = Date.now();
         console.log('data',y);
         Sens.data.push(y);
-        await Sens.save();
+        // await Sens.save();
+        // AlertClients(data , y); <---- wrong params
         return;
     }
     console.log('error', 'not valid data');
@@ -320,6 +327,126 @@ router.post('/FactoryAdd',async (req, res) =>
         console.log(e);
     }
 });
+
+
+
+//******************************************Socket io****************************************************//
+//Sensor/UpdateValue
+SocketClients = [];
+const chat = io
+    .of('/Sensor/UpdateValue')
+    .on('connection', (socket) => {
+        socket.on('getChartdata', async (message) => {
+            //console.log('Chart Update ',message);
+            //console.log('getChartdata', socket.id);
+            //console.log('SocketClients length ', SocketClients.length);
+            if (SocketClients.length === 0)
+            {
+                //console.log('create 1');
+                let clientInfo = {};
+                clientInfo.socketId = socket.id;
+                clientInfo.token = message.Accesstoken;
+                clientInfo.locationId = message.LocationId;
+                SocketClients.push(clientInfo);
+            } else
+            {
+                let exist = false;
+                SocketClients.forEach(item => {
+                    if (item.socketId === socket.id)
+                    {
+                        if (item.token === message.Accesstoken)
+                        {
+                            if (item.locationId === message.LocationId)
+                            {
+                                //console.log('Socket Already Exists');
+                                exist = true;
+                            }else
+                            {
+                                exist = true;
+                                //console.log('Changed Location Id');
+                                //console.log('SocketClients ', SocketClients);
+                                item.locationId = message.LocationId;
+                            }
+                        }
+                    }
+                });
+                if (exist === false)
+                {
+                    console.log('create 2');
+                    let clientInfo = {};
+                    clientInfo.socketId = socket.id;
+                    clientInfo.token = message.Accesstoken;
+                    clientInfo.locationId = message.LocationId;
+                    SocketClients.push(clientInfo);
+                }
+            }
+            console.log('Socket Clients' , SocketClients);
+            // socket.emit('getChartdata',  await getChart(message.LocationId, message.Accesstoken));
+        });
+        socket.on('getData', (message) => {
+            //console.log('change data');
+        });
+        socket.on('disconnect', (message) => {
+            //console.log('disconnect' , message);
+            let i = 0;
+            SocketClients.forEach(item => {
+                if (item.socketId === socket.id)
+                    SocketClients.splice(i,1);
+                i++;
+            })
+        });
+    });
+
+async function getChart(LocationId, AccessToken) {
+    return new Promise(async function(resolve, reject) {
+        try {
+            payload = jwt.verify(AccessToken, process.env.token_Key);
+        } catch (e) {
+            console.log('token not verified');
+            return;
+        }
+        if (!payload) {
+            console.log('empty payload');
+            return;
+        }
+        decoded = jwt.decode(AccessToken, {complete: true});
+        user =  await User.findById(decoded.payload.id);
+        if (!user) {
+            console.log('empty user ', user);
+            return;
+        }
+        locationss =  await Location.findById(LocationId);
+        if (!locationss) {
+            console.log('empty locationss ', locationss);
+            return;
+        }
+        console.log('return value', await locationss.AutomaticIrrigation);
+        resolve(await locationss.AutomaticIrrigation) // successfully fill promise
+    })
+}
+async function AlertClients(data, Sensor) {
+    //console.log('Alert Clients', Sensor._id);
+    //console.log('data', data);
+    loc = await Location.find({Sensor_ids: Sensor._id});
+    if (!loc)
+    {return;}
+    //console.log('location to update', loc[0]._id);
+    //console.log('SocketClients', SocketClients);
+    SocketClients.forEach(item => {
+        console.log('item ', item.locationId);
+        console.log('loc[0]._id ', loc[0]._id);
+        if (item.locationId == loc[0]._id) {
+            console.log('Needs Update');
+            console.log('socket id ' , item.socketId);
+            console.log('new data' , data);
+            // state = io.to(item.socketId).emit('getChartdata', 'I just met you');
+            state = io.of('/Sensor/UpdateValue').to(item.socketId).emit('setChartdata', { SensId : Sensor._id , newData : data });
+            // console.log('state' , state);
+        }
+    });
+}
+
+
 
 
 module.exports = router;
