@@ -372,7 +372,7 @@ const chat = io
                 });
                 if (exist === false)
                 {
-                    console.log('create 2');
+                    //console.log('create 2');
                     let clientInfo = {};
                     clientInfo.socketId = socket.id;
                     clientInfo.token = message.Accesstoken;
@@ -380,7 +380,7 @@ const chat = io
                     SocketClients.push(clientInfo);
                 }
             }
-            console.log('Socket Clients' , SocketClients);
+            // console.log('Socket Clients' , SocketClients);
             // socket.emit('getChartdata',  await getChart(message.LocationId, message.Accesstoken));
         });
         socket.on('getData', (message) => {
@@ -433,12 +433,12 @@ async function AlertClients(data, Sensor) {
     //console.log('location to update', loc[0]._id);
     //console.log('SocketClients', SocketClients);
     SocketClients.forEach(item => {
-        console.log('item ', item.locationId);
-        console.log('loc[0]._id ', loc[0]._id);
+        //console.log('item ', item.locationId);
+        //console.log('loc[0]._id ', loc[0]._id);
         if (item.locationId == loc[0]._id) {
-            console.log('Needs Update');
-            console.log('socket id ' , item.socketId);
-            console.log('new data' , data);
+            //console.log('Needs Update');
+            //console.log('socket id ' , item.socketId);
+            //console.log('new data' , data);
             // state = io.to(item.socketId).emit('getChartdata', 'I just met you');
             state = io.of('/Sensor/UpdateValue').to(item.socketId).emit('setChartdata', { SensId : Sensor._id , newData : data });
             // console.log('state' , state);

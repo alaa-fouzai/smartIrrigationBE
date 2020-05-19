@@ -103,6 +103,12 @@ router.get('/SensorsData',verifyToken, async (req , res)=>{
     res.json({status:"ok" , response : sensors , location : locations});
 
 });
+router.get('/notify', async (req , res)=>{
+
+    NotifyUser(req.body.UserId,req.body.data );
+    res.json({status:"ok" , message : "notif sent" });
+
+});
 
 router.get('/weither', verifyToken ,async (req , res)=>{
 
@@ -1569,7 +1575,7 @@ function getWeither(long,lat ) {
 }
 
 
-
+/******************************* socket io ****************************************/
 const chat = io
     .of('/dashboard/IrrigationState')
     .on('connection', (socket) => {
@@ -1582,6 +1588,70 @@ const chat = io
         socket.on('changedata', (message) => {
             //console.log('change data');
             ChangeIrrigationState(message.LocationId , message.Accesstoken, message.NewState);
+        });
+    });
+Notification = [];
+const notif = io
+    .of('/dashboard/Notification')
+    .on('connection', (socket) => {
+        // socket.emit('getNotification', 'hello notification' );
+        console.log('notiy ' , socket.id);
+        console.log('Notification ' , Notification);
+        socket.on('getNotification', async (message) => {
+            console.log('get notification message',message);
+            //console.log('getChartdata', socket.id);
+            //console.log('SocketClients length ', SocketClients.length);
+            if (Notification.length === 0)
+            {
+                //console.log('create 1');
+                let clientInfo = {};
+                clientInfo.socketId = socket.id;
+                clientInfo.token = message.Accesstoken;
+                clientInfo.UserId = message.UserId;
+                Notification.push(clientInfo);
+            } else
+            {
+                let exist = false;
+                Notification.forEach(item => {
+                    if (item.socketId === socket.id)
+                    {
+                        console.log('Socket Exists');
+                    }
+                });
+                if (exist === false)
+                {
+                    console.log('create 2');
+                    let clientInfo = {};
+                    clientInfo.socketId = socket.id;
+                    clientInfo.token = message.Accesstoken;
+                    clientInfo.UserId = message.UserId;
+                    Notification.push(clientInfo);
+                }
+            }
+            console.log('Notification Clients' , Notification);
+            // socket.emit('getNotification', 'hello notification' );
+        });
+        socket.on('getNotification', (message) => {
+            //console.log('change data');
+        });
+        socket.on('disconnectNotification', (message) => {
+            console.log('disconnectNotification' , message);
+            let i = 0;
+            /*
+            Notification.forEach(item => {
+                if (item.socketId === socket.id)
+                    Notification.splice(i,1);
+                i++;
+            })*/
+        });
+        socket.on('disconnect', (message) => {
+            //console.log('disconnect' , message);
+            let i = 0;
+            Notification.forEach(item => {
+                if (item.socketId === socket.id)
+                    Notification.splice(i,1);
+                i++;
+            })
         });
     });
 
@@ -1637,6 +1707,30 @@ async function getIrrigationState(LocationId, AccessToken) {
             resolve(await locationss.AutomaticIrrigation) // successfully fill promise
     })
 }
-
+function NotifyUser(UserId, data) {
+    console.log("UserId" , UserId);
+    /****
+     * data {
+     * icon: 'info','warning',error,success
+      title: 'Oops...',
+      text: 'resJSON.message,'
+      }
+     * *******/
+    if (!UserId)
+    {return;}
+    //generate token
+    Notification.forEach(item => {
+        console.log('item ', item);
+        console.log('Notification ', UserId);
+        if (item.UserId === UserId) {
+            console.log('Needs Update');
+            console.log('socket id ' , item.socketId);
+            console.log('new data' , data);
+            notif.to(item.socketId).emit('getNotification', data);
+            // console.log('state' , state);
+            // socket.emit('getNotification', 'hello notification' );
+        }
+    });
+}
 
 module.exports = router;
