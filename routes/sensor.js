@@ -195,7 +195,7 @@ router.post('/AddSensorData',async (req, res) =>
         req.body.time =  Date.now() ;
         Sens.data.push(req.body);
         // console.log(Sens.data);
-        // await Sens.save();
+        await Sens.save();
         AlertClients(req.body, Sens);
         return res.status(200).json({status: "ok", message: Sens});
     } catch (e) {
