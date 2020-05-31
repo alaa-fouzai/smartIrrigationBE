@@ -7,14 +7,10 @@ const Post = require('../Models/Posts');
 const kafka = require('kafka-node');
 
 router.post('/',async (req,res) => {
-    console.log(req.body);
-    const post=new Post({
-        title : req.body.title,
-        description :req.body.description
-    });
+    console.log('body' , req.body);
     try{
-    const PostSaved=await post.save();
-    res.json(PostSaved);
+
+        res.json({status:"ok" , message: 'Sensor Delete'});
     }catch (err) {
         res.json({ message:err });
     }
@@ -22,7 +18,7 @@ router.post('/',async (req,res) => {
 });
 router.get('/',async (req , res)=>{
     try{
-        const post=await Post.find().limit(5);
+        console.log('body' , req.body);
         res.header("Access-Control-Allow-Headers", "*");
         res.json({status:"ok" , message: 'Sensor Delete'});
     }catch (e) {

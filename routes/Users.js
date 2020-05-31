@@ -49,6 +49,7 @@ router.post('/login',async (req,res) =>
         // await new Promise(resolve => setTimeout(resolve, 5000));
         const NewUser =await User.find({ email : req.body.email  }).limit(1);
         console.log(NewUser.length);
+        //await sleep(2000);
         if (NewUser.length < 1)
         {
             await res.json({status: "err", message: 'Email Does not Exists'});
@@ -78,6 +79,11 @@ router.post('/login',async (req,res) =>
     }
 
 });
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 router.post('/loginGmail',async (req,res) =>
 {
 

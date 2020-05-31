@@ -83,7 +83,7 @@ router.get('/sidenav',verifyToken, async (req , res)=>{
 });
 router.get('/SensorsData',verifyToken, async (req , res)=>{
     sensors = [];
-
+    await new Promise(resolve => setTimeout(resolve, 5000));
     try {
         locations = await Location.findById(req.query.location_id);
         for (const item of locations.Sensor_ids) {
