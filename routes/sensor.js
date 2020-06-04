@@ -446,7 +446,4 @@ async function AlertClients(data, Sensor) {
     });
 }
 
-
-
-
 module.exports = router;

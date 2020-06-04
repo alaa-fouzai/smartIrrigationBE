@@ -31,10 +31,6 @@ app.get('/',(req,res)=>{
     res.send('hello world');
 });
 
-
-
-
-
 const news = io
     .of('/news')
     .on('connection', (socket) => {
