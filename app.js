@@ -4,8 +4,12 @@ const app = express();
 var jwt = require('jsonwebtoken');
 const mongoose=require('mongoose');
 const socket = require('socket.io');
+//const path = require('path');
 mongoose.connect(process.env.DB_CONNECTION,{ useNewUrlParser: true , useUnifiedTopology: true } ,() => console.log('connected to BD')).catch(error => handleError(error));
 const bodyParser= require('body-parser');
+
+//app.use(express.static(path.join(__dirname, '../frontend/dist/AdminLTE')))
+
 
 app.use(bodyParser.json());
 const server = app.listen(3000,'0.0.0.0');
@@ -25,12 +29,14 @@ app.use('/api/sensors',SensorRouter);
 app.use('/api/location',LocationRouter);
 app.use('/api/dashboard',DashboardRouter);
 
-
-
+/*app.get('*', (req, res) => {
+    return res.sendFile(path.join(__dirname, '../frontend/dist/AdminLTE/index.html'))
+});*/
+/*
 app.get('/',(req,res)=>{
     res.send('hello world');
 });
-
+*/
 const news = io
     .of('/news')
     .on('connection', (socket) => {

@@ -81,6 +81,58 @@ router.get('/sidenav',verifyToken, async (req , res)=>{
     res.json({status:"ok" , response : All_User_Locations_names});
 
 });
+router.get('/profile',verifyToken, async (req , res)=>{
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    All_User_Locations = [];
+    user = await User.findById(req.userId);
+    for (const item of user.Location_ids) {
+        locationss = await Location.findById(item).select('SiteName Sensor_ids Created_date').sort({Created_date: 1});
+        All_User_Locations.push(locationss);
+    }
+
+
+    res.json({status:"ok" , response : {"user" : user ,"locations": All_User_Locations}});
+
+});
+router.post('/UpdateProfile',verifyToken, async (req , res)=>{
+    All_User_Locations = [];
+    user = await User.findById(req.userId);
+    if (user.password === req.body.password)
+    {
+        if (req.body.FirstName.length > 0 && req.body.FirstName !== user.FirstName ) {
+            console.log('true');
+            user.FirstName = req.body.FirstName;
+        }
+        if (req.body.LastName.length > 0 && req.body.LastName !== user.LastName ) {
+            console.log('LastName');
+            user.LastName = req.body.LastName;
+        }
+        if (req.body.email.length > 0 && req.body.email !== user.email ) {
+            console.log('email');
+            user.email = req.body.email;
+        }
+        if (req.body.newPassword.length > 0 && req.body.newPassword !== user.password ) {
+            console.log('true');
+            user.password = req.body.newPassword;
+        }
+        if (req.body.smsNotif !== undefined && req.body.smsNotif !== "" && req.body.smsNotif !== user.Notifications.SMS ) {
+            console.log('changing sms notif');
+            user.Notifications.SMS= req.body.smsNotif;
+        }
+        if (req.body.emailNotif !== undefined && req.body.emailNotif !== "" && req.body.emailNotif !== user.Notifications.Email ) {
+            console.log('email notif ');
+            user.Notifications.Email = req.body.emailNotif;
+        }
+        if (req.body.pushNotif !== undefined && req.body.pushNotif !== "" && req.body.pushNotif !== user.Notifications.Push ) {
+            console.log('push notif');
+            user.Notifications.Push= req.body.pushNotif ;
+        }
+        await user.save();
+        return res.json({status:"ok" , message : "Profile Updated \n Plz refrech the page" , response : {"user" : user}});
+    } else return res.json({status:"err" , message : "Wrong Password"});
+
+
+});
 router.get('/SensorsData',verifyToken, async (req , res)=>{
     sensors = [];
     // await new Promise(resolve => setTimeout(resolve, 5000));
