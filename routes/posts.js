@@ -106,7 +106,7 @@ router.get('/kafka/test',async (req , res)=>{
             // console.log(data);
         });
     });
-        return res.status(200).json({status: "ok", message: 'hello world'});
+        return res.status(200).json({status: "ok", message: 'message sent'});
 });
 /*
 try {

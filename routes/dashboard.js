@@ -9,6 +9,7 @@ const https = require('https');
 const querystring = require('querystring');
 const socket = require('socket.io');
 const mongoose=require('mongoose');
+const nodemailer = require('nodemailer');
 
 function verifyToken(req, res, next) {
     let payload;
@@ -157,7 +158,14 @@ router.get('/SensorsData',verifyToken, async (req , res)=>{
 });
 router.get('/notify', async (req , res)=>{
 
-    NotifyUser(req.body.UserId,req.body.data );
+    user = await User.findById(req.body.UserId);
+    console.log("notif user",user);
+    if (user==={} || user===undefined)
+    {return ;}
+    if (user.Notifications.Push === true)
+    {NotifyUser(req.body.UserId,req.body.data );}
+    if (user.Notifications.Email === true)
+    {EmailUser(user.email,req.body.data );}
     res.json({status:"ok" , message : "notif sent" });
 
 });
@@ -165,12 +173,13 @@ router.get('/notify', async (req , res)=>{
 router.get('/weither', verifyToken ,async (req , res)=>{
 
     try{
+        console.log("weither request",req.query);
         locations = await Location.findById(req.query.location_id);
         // const url = 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY'
-        // let h = await getWeither(locations.Coordinates[0],locations.Coordinates[1]);
+        let h = await getWeither(locations.Coordinates[0],locations.Coordinates[1]);
         //console.log('weither data' ,h);
-
-        let h ={
+        let uv= await getUV(locations.Coordinates[0],locations.Coordinates[1]);
+        /*let h ={
             "cod": "200",
             "message": 0,
             "cnt": 40,
@@ -1571,9 +1580,9 @@ router.get('/weither', verifyToken ,async (req , res)=>{
                 "sunrise": 1587184842,
                 "sunset": 1587232565
             }
-        };
+        };*/
 
-        return res.status(200).json({status: "ok", message: h});
+        return res.status(200).json({status: "ok", message: {weither :h , UVforcast : uv}});
     } catch (e) {
         console.log('here 5');
         return res.status(400).json({status: "err", message: e.toString()});
@@ -1625,7 +1634,55 @@ function getWeither(long,lat ) {
         });
     });
 }
+function getUV(long,lat ) {
+    try {
+        return new Promise(function (resolve, reject) {
+            let data = '';
+            let data1 = '';
+            // GET parameters
+            const parameters = {
+                appid: process.env.key,
+                lat: lat,//36.717199016072186
+                lon: long,//10.215536125104649
+            };
 
+// GET parameters as query string : "?id=123&type=post"
+            const get_request_args = querystring.stringify(parameters);
+            var options = {
+                host: 'api.openweathermap.org',
+                path: '/data/2.5/uvi/forecast?' + get_request_args,
+                json: true,
+                headers: {
+                    "content-type": "application/json",
+                    "accept": "application/json"
+                },
+            }
+
+            // api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={your api key}    process.env.token_Key
+            https.get(options, (resp) => {
+
+
+                // A chunk of data has been recieved.
+                resp.on('data', (chunk) => {
+                    data += chunk;
+                });
+                console.log('here 2');
+                // The whole response has been received. Print out the result.
+                resp.on('end', () => {
+                    console.log(JSON.parse(data).explanation);
+                    data1 = JSON.parse(data);
+                    resolve(data1);
+                });
+                console.log('here 3');
+            }).on("error", (err) => {
+                console.log("Error: " + err.message + err.code);
+                reject(err.message)
+            });
+        });
+    } catch (e) {
+        console.log('getUV :',e.toString());
+    }
+}
 
 /******************************* socket io ****************************************/
 const chat = io
@@ -1781,6 +1838,30 @@ function NotifyUser(UserId, data) {
             notif.to(item.socketId).emit('getNotification', data);
             // console.log('state' , state);
             // socket.emit('getNotification', 'hello notification' );
+        }
+    });
+}
+function EmailUser(Email, data) {
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.Mailer_email,
+            pass: process.env.Mailer_pass
+        }
+    });
+
+    var mailOptions = {
+        from: 'SmartIrrigation',
+        to: 'fouzai.alaa@gmail.com',
+        subject: 'Smart Irrigation',
+        text: 'hello'
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
         }
     });
 }
