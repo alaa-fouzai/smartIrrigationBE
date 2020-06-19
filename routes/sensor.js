@@ -279,6 +279,7 @@ try {
 
 async function verify_kafka_data_message(x) {
     var y = JSON.parse(x);
+    // decrypt
     console.log('y :', Object.keys(y).length);
     if (Object.keys(y).length === 5) {
         console.log('ok', 'data accepted');
@@ -343,6 +344,23 @@ router.post('/RelayAction', async (req, res) => {
     }
 });
 
+router.post('/decrypt', async (req, res) => {
+    try {
+        /// 0a28169424
+        data = decrypt(req.body.kafkaData);
+        return res.json({status: "ok", message: data});
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+function decrypt(data) {
+    console.log(data);
+    temp=(parseInt(data.substring(0,4),16));
+    hum =(parseInt(data.substring(4,8) , 16));
+    volt=(parseInt(data.substring(8,10) , 16));
+    return({temperature : temp , humidity : hum , voltage : volt});
+}
 
 //******************************************Socket io****************************************************//
 //Sensor/UpdateValue

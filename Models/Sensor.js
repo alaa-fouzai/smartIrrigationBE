@@ -21,5 +21,7 @@ const SensorsSchema= mongoose.Schema({
         default : Date.now()
     },
     data: []
+    ,
+    IrrigationRules :[]
 });
 module.exports=mongoose.model('Sensors',SensorsSchema);

@@ -131,9 +131,19 @@ router.post('/UpdateProfile',verifyToken, async (req , res)=>{
         await user.save();
         return res.json({status:"ok" , message : "Profile Updated \n Plz refrech the page" , response : {"user" : user}});
     } else return res.json({status:"err" , message : "Wrong Password"});
-
-
 });
+//// RelayConfiguration
+router.post('/RelayConfiguration',verifyToken, async (req , res)=>{
+    try {
+        console.log('relay Configuration', req.body.RelayConfiguration);
+        return res.json({status:"ok" , message : "ok" });
+    } catch (e) {
+        console.log(e.toString());
+    }
+});
+
+
+
 router.get('/SensorsData',verifyToken, async (req , res)=>{
     sensors = [];
     // await new Promise(resolve => setTimeout(resolve, 5000));

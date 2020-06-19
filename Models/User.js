@@ -28,6 +28,8 @@ const UserSchema = mongoose.Schema(
         },
         Location_ids: [mongoose.Schema.Types.ObjectId]
         ,
+        Job_ids: [mongoose.Schema.Types.ObjectId]
+        ,
         Notifications : {
             SMS : {type : Boolean  },
             Email : {type : Boolean  },
