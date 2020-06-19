@@ -1630,14 +1630,14 @@ function getWeither(long,lat ) {
             resp.on('data', (chunk) => {
                 data += chunk;
             });
-            console.log('here 2');
+            //console.log('here 2');
             // The whole response has been received. Print out the result.
             resp.on('end', () => {
-                console.log(JSON.parse(data).explanation);
+                //console.log(JSON.parse(data).explanation);
                 data1 = JSON.parse(data);
                 resolve(data1);
             });
-            console.log('here 3');
+            //console.log('here 3');
         }).on("error", (err) => {
             console.log("Error: " + err.message + err.code);
             reject(err.message)
@@ -1676,14 +1676,14 @@ function getUV(long,lat ) {
                 resp.on('data', (chunk) => {
                     data += chunk;
                 });
-                console.log('here 2');
+                //console.log('here 2');
                 // The whole response has been received. Print out the result.
                 resp.on('end', () => {
                     console.log(JSON.parse(data).explanation);
                     data1 = JSON.parse(data);
                     resolve(data1);
                 });
-                console.log('here 3');
+                //console.log('here 3');
             }).on("error", (err) => {
                 console.log("Error: " + err.message + err.code);
                 reject(err.message)
@@ -1714,8 +1714,8 @@ const notif = io
     .of('/dashboard/Notification')
     .on('connection', (socket) => {
         // socket.emit('getNotification', 'hello notification' );
-        console.log('notiy ' , socket.id);
-        console.log('Notification ' , Notification);
+        //console.log('notiy ' , socket.id);
+        //console.log('Notification ' , Notification);
         socket.on('getNotification', async (message) => {
             console.log('get notification message',message);
             //console.log('getChartdata', socket.id);

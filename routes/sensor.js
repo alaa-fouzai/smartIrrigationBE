@@ -260,14 +260,14 @@ try {
         consumer = new Consumer(
             client,
             [
-                {topic: 'TestTopic', partition: 0}
+                {topic: process.env.kafka_Topic, partition: 0}
             ],
             {
                 autoCommit: true
             }
         );
     consumer.on('message', function (message) {
-        console.log(message);
+        // console.log(message);
         verify_kafka_data_message(message.value);
     });
     consumer.on('error', function (err) {
@@ -279,18 +279,26 @@ try {
 
 async function verify_kafka_data_message(x) {
     var y = JSON.parse(x);
+    console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
+    console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
     // decrypt
-    console.log('y :', Object.keys(y).length);
-    if (Object.keys(y).length === 5) {
+   console.log('y :', Object.keys(y).length);
+
+    if (Object.keys(y).length === 1) {
         console.log('ok', 'data accepted');
-        Sens = await Sensor.findOne({SensorIdentifier: y.SensorIdentifier});
-        delete y.SensorIdentifier;
-        y.time = Date.now();
-        console.log('data', y);
-        Sens.data.push(y);
+        Sens = await Sensor.findOne({SensorIdentifier: y.DevEUI_uplink.DevEUI});
+        // delete y.SensorIdentifier;
+        // y.time = Date.now();
+        if (Sens) {
+        console.log('data', y.DevEUI_uplink.payload_hex);
+        Sens.data.push(decrypt(y.DevEUI_uplink.payload_hex));
         await Sens.save();
-        AlertClients(y, Sens); //<---- wrong params
+        AlertClients(decrypt(y.DevEUI_uplink.payload_hex), Sens); //<---- wrong params
         return;
+        }
+        else {
+            console.log(Sens , ' not my Sensor');
+        }
     }
     console.log('error', 'not valid data');
 }
@@ -356,10 +364,10 @@ router.post('/decrypt', async (req, res) => {
 
 function decrypt(data) {
     console.log(data);
-    temp=(parseInt(data.substring(0,4),16));
-    hum =(parseInt(data.substring(4,8) , 16));
+    temp=(parseInt(data.substring(0,4),16)/100);
+    hum =(parseInt(data.substring(4,8) , 16)/100);
     volt=(parseInt(data.substring(8,10) , 16));
-    return({temperature : temp , humidity : hum , voltage : volt});
+    return({temperature : temp , humidite : hum , batterie : volt , humiditéSol : 0 , time : Date.now()});
 }
 
 //******************************************Socket io****************************************************//
