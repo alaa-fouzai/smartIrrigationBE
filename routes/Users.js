@@ -70,7 +70,7 @@ router.post('/login',async (req,res) =>
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         var payload = {
             id: NewUser[0]._id,
-        }
+        };
         let token = jwt.sign(payload,process.env.token_Key);
         res.json({status:"ok" , message: 'Welcome Back', UserData : NewUser , token});
     }catch (err) {

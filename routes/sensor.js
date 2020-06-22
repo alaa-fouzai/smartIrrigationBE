@@ -195,7 +195,6 @@ router.post('/AddSensorData', async (req, res) => {
                 "humiditéSol":21
                     }
         * */
-
         Sens = await Sensor.findOne({SensorIdentifier: req.body.SensorIdentifier});
         //console.log(req.body);
         delete req.body.SensorIdentifier;
@@ -279,25 +278,32 @@ try {
 
 async function verify_kafka_data_message(x) {
     var y = JSON.parse(x);
-    console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
-    console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
+    //console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
+    //console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
     // decrypt
-   console.log('y :', Object.keys(y).length);
+   //console.log('y :', Object.keys(y).length);
 
     if (Object.keys(y).length === 1) {
         console.log('ok', 'data accepted');
         Sens = await Sensor.findOne({SensorIdentifier: y.DevEUI_uplink.DevEUI});
         // delete y.SensorIdentifier;
+        console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
+        console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
+
         // y.time = Date.now();
         if (Sens) {
+        console.log('Sensor name:',Sens.name);
         console.log('data', y.DevEUI_uplink.payload_hex);
-        Sens.data.push(decrypt(y.DevEUI_uplink.payload_hex));
+        // Sens.data.push(decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
+        Sens.data.push(decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
         await Sens.save();
-        AlertClients(decrypt(y.DevEUI_uplink.payload_hex), Sens); //<---- wrong params
+        AlertClients(decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time), Sens);
+        checkRules(Sens,decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
         return;
         }
         else {
             console.log(Sens , ' not my Sensor');
+            return ;
         }
     }
     console.log('error', 'not valid data');
@@ -355,19 +361,26 @@ router.post('/RelayAction', async (req, res) => {
 router.post('/decrypt', async (req, res) => {
     try {
         /// 0a28169424
-        data = decrypt(req.body.kafkaData);
+        data = decrypt(req.body.kafkaData,req.body.time);
         return res.json({status: "ok", message: data});
     } catch (e) {
         console.log(e);
     }
 });
-
-function decrypt(data) {
-    console.log(data);
+function checkRules(Sens,data) {
+    console.log('/*********************************Check Rules*********************************/');
+    console.log('Sens :',Sens);
+    console.log('data :',data);
+    console.log('/*********************************Check Rules*********************************/');
+}
+function decrypt(data, time) {
+    // console.log(data);
+    // console.log('time :', Date(time));
     temp=(parseInt(data.substring(0,4),16)/100);
     hum =(parseInt(data.substring(4,8) , 16)/100);
-    volt=(parseInt(data.substring(8,10) , 16));
-    return({temperature : temp , humidite : hum , batterie : volt , humiditéSol : 0 , time : Date.now()});
+    v=(parseInt(data.substring(8,10) , 16));
+    volt = (v - process.env.Lithiom_Min_Charge)/(process.env.Lithiom_Max_Charge - process.env.Lithiom_Min_Charge) *100;
+    return({temperature : temp , humidite : hum , batterie : volt , humiditéSol : 0 , time : Date.parse(time)});
 }
 
 //******************************************Socket io****************************************************//
