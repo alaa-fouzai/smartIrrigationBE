@@ -5,11 +5,11 @@ const querystring = require('querystring');
 const router =express.Router();
 const Post = require('../Models/Posts');
 const kafka = require('kafka-node');
-
+const Dash = require('./dashboard');
 router.post('/',async (req,res) => {
     console.log('body' , req.body);
     try{
-
+        Dash.EmailUserrrrr('','');
         res.json({status:"ok" , message: 'Sensor Delete'});
     }catch (err) {
         res.json({ message:err });
@@ -93,6 +93,7 @@ function getWeither(long,lat ) {
         });
     });
 }
+/*
 router.get('/kafka/test',async (req , res)=>{
     // console.log('body :',req.body);
     Producer = kafka.Producer,
@@ -107,7 +108,7 @@ router.get('/kafka/test',async (req , res)=>{
         });
     });
         return res.status(200).json({status: "ok", message: 'message sent'});
-});
+});*/
 /*
 try {
     Consumer = kafka.Consumer,

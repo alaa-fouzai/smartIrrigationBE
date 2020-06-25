@@ -112,6 +112,43 @@ router.get('/', verifyToken, async (req, res) => {
         res.json({message: e});
     }
 });
+router.post('/AddRules', verifyToken, async (req, res) => {
+    try {
+        /*{
+  SensorId: '5e5f72d8343934062cf6d759',
+  Rules: [
+    {
+      SensorId: '5e5f72d8343934062cf6d759',
+      date: 'Wed Jun 24 2020 10:05:19 GMT+0100 (West Africa Standard Time)',
+      Mode: 'Manuel',
+      TMax: '80',
+      TMin: '50',
+      NotifSelection: [Array],
+      RelaySelection: []
+    }
+  ]
+}*/
+        notif = { SMS : 0 , Email : 0 ,Push : 0};
+        req.body.Rules[0].NotifSelection.forEach(item => {
+            if (item.item_id === 1 )
+            {notif.Email =1}
+            if (item.item_id === 3 )
+            {notif.SMS = 1}
+            if (item.item_id === 2 )
+            {notif.Push =1}
+        });
+        var timeInMillis = Date.parse(req.body.Rules[0].date) /1000;
+        Sens = await Sensor.findById(req.body.SensorId).select('-data');
+        const rule = { Status : false , StartTime : timeInMillis , Tmax : req.body.Rules[0].TMax , Tmin : req.body.Rules[0].TMin
+            , Notifications : notif , Realy_ids : req.body.Rules[0].RelaySelection};
+        Sens.Rules.push(rule);
+        await Sens.save();
+        //console.log(Sens.Rules[0].Realy_ids);
+        res.json({status: "ok" , message : "schedule saved" });
+    } catch (e) {
+        res.json({status: "err",message: e.toString()});
+    }
+});
 router.get('/geoMap', verifyToken, async (req, res) => {
     try {
         geoLocations = {
@@ -219,6 +256,7 @@ router.post('/dashboard', verifyToken, async (req, res) => {
             "humiditéSol":21
                 }
     * */
+    try{
     user = await User.findById(req.userId);
     // get locations
     var data = [];
@@ -242,6 +280,9 @@ router.post('/dashboard', verifyToken, async (req, res) => {
     //console.log(Sens.data);
     //await Sens.save();
     return res.status(200).json({status: "ok", message: data});
+    } catch (e) {
+        console.log(e.toString());
+    }
 });
 /*
 const sensor = io
@@ -282,7 +323,6 @@ async function verify_kafka_data_message(x) {
     //console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
     // decrypt
    //console.log('y :', Object.keys(y).length);
-
     if (Object.keys(y).length === 1) {
         console.log('ok', 'data accepted');
         Sens = await Sensor.findOne({SensorIdentifier: y.DevEUI_uplink.DevEUI});
@@ -298,7 +338,7 @@ async function verify_kafka_data_message(x) {
         Sens.data.push(decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
         await Sens.save();
         AlertClients(decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time), Sens);
-        checkRules(Sens,decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
+        checkRules(Sens.Rules,Sens._id,decrypt(y.DevEUI_uplink.payload_hex,y.DevEUI_uplink.Time));
         return;
         }
         else {
@@ -347,6 +387,7 @@ router.post('/FactoryAdd', async (req, res) => {
         console.log(e);
     }
 });
+
 router.post('/RelayAction', async (req, res) => {
     try {
         console.log(req.body.id);
@@ -367,10 +408,58 @@ router.post('/decrypt', async (req, res) => {
         console.log(e);
     }
 });
-function checkRules(Sens,data) {
+function checkRules(rules,id,data) {
     console.log('/*********************************Check Rules*********************************/');
-    console.log('Sens :',Sens);
-    console.log('data :',data);
+    console.log('rules ' ,rules );
+    if (! rules)
+    {
+        console.log('no rules');
+        return ;
+    }
+    const rule = rules[rules.length -1] ;
+    console.log('rules ' ,rule );
+    if (rule) {
+        console.log('Sens :', rule );
+        console.log('data :',data);
+        console.log('id :',id);
+        if (rule.Status === false) {
+            console.log('rule is false no action needed ');
+        }
+        else {
+            console.log('rule is active');
+            // open relay
+            Dashboard.foo();
+            Dashboard.EmailUserrrrr('fouzai.alaa@gmail.com','hello hello it works from sensors');
+            //NotifyUser();
+        }
+    } else {
+        console.log('no rules');
+        return;
+    }
+    /*rule
+    rule = rules[rules.length] ;
+    if (rule.Status === false) {
+
+    }
+    {
+    Notifications: { SMS: true, Email: true, Push: true },
+    Status: false,
+    Realy_ids: [ [Object] ],
+    _id: 5ef46e7175b14d2f4c8700a0,
+    StartTime: 1593335318,
+    Tmax: 90,
+    Tmin: 40
+  }
+  data : {
+  temperature: 25.3,
+  humidite: 59.9,
+  batterie: 50,
+  'humiditéSol': 0,
+  time: 1593087321094
+}*/
+
+
+
     console.log('/*********************************Check Rules*********************************/');
 }
 function decrypt(data, time) {
@@ -389,6 +478,7 @@ SocketClients = [];
 const chat = io
     .of('/Sensor/UpdateValue')
     .on('connection', (socket) => {
+        //lista lkol
         socket.on('getChartdata', async (message) => {
             //console.log('Chart Update ',message);
             //console.log('getChartdata', socket.id);
@@ -583,5 +673,4 @@ async function RelayAction(data, Sensor) {
             console.log('Client disconnected!');
         });
     });*/
-
 module.exports = router;

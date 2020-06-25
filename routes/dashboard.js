@@ -10,7 +10,7 @@ const querystring = require('querystring');
 const socket = require('socket.io');
 const mongoose=require('mongoose');
 const nodemailer = require('nodemailer');
-
+module.exports.Email = EmailUser();
 function verifyToken(req, res, next) {
     let payload;
 
@@ -1801,6 +1801,10 @@ async function ChangeIrrigationState(LocationId, AccessToken, NewState) {
 }
 async function getIrrigationState(LocationId, AccessToken) {
     return new Promise(async function(resolve, reject) {
+        if (LocationId === 'none here')
+        {
+            reject(new Error('no location Id'));
+        }
     try {
         payload = jwt.verify(AccessToken, process.env.token_Key);
     } catch (e) {
@@ -1864,7 +1868,7 @@ function EmailUser(Email, data) {
         from: 'SmartIrrigation',
         to: 'fouzai.alaa@gmail.com',
         subject: 'Smart Irrigation',
-        text: 'hello'
+        text: 'hello555'
     };
 
     transporter.sendMail(mailOptions, function(error, info){
@@ -1875,5 +1879,4 @@ function EmailUser(Email, data) {
         }
     });
 }
-
 module.exports = router;

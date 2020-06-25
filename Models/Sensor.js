@@ -22,6 +22,28 @@ const SensorsSchema= mongoose.Schema({
     },
     data: []
     ,
-    IrrigationRules :[]
+    Rules :[
+        {
+            Status: {
+                type : Boolean,
+                default : false
+            },
+            StartTime: {
+                type : Number,
+            },
+            Tmax: {
+                type : Number,
+            },
+            Tmin: {
+                type : Number,
+            },
+            Notifications : {
+                SMS : {type : Boolean  },
+                Email : {type : Boolean  },
+                Push : {type : Boolean  },
+            },
+            Realy_ids: []
+        }
+    ]
 });
 module.exports=mongoose.model('Sensors',SensorsSchema);
