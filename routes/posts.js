@@ -9,7 +9,6 @@ const Dash = require('./dashboard');
 router.post('/',async (req,res) => {
     console.log('body' , req.body);
     try{
-        Dash.EmailUserrrrr('','');
         res.json({status:"ok" , message: 'Sensor Delete'});
     }catch (err) {
         res.json({ message:err });

@@ -3,6 +3,7 @@ const router = express.Router();
 const Sensor = require('../Models/Sensor');
 const Data = require('../Models/Data');
 const User = require('../Models/User');
+const Shared = require('./shared');
 const Location = require('../Models/Location');
 var jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -284,6 +285,24 @@ router.post('/dashboard', verifyToken, async (req, res) => {
         console.log(e.toString());
     }
 });
+router.post('/StartProcess', verifyToken, async (req, res) => {
+    /*
+    * send data like this
+    *         {
+            "SensorIdentifier": "123",
+            "humidite":"25",
+            "temperature":23,
+            "batterie":25,
+            "humiditéSol":21
+                }
+    * */
+    try{
+        console.log('request ', req.body );
+        return res.status(200).json({status: "ok", message: "process Started"});
+    } catch (e) {
+        console.log(e.toString());
+    }
+});
 /*
 const sensor = io
     .of('/ensor')
@@ -361,22 +380,22 @@ return res.status(200).json({status: "ok", message: Sens});
 */
 router.post('/FactoryAdd', async (req, res) => {
     try {
-        console.log('req.body ', req.body);
+        //console.log('req.body ', req.body);
         Sens = await Sensor.findOne({SensorIdentifier: req.body.identifier});
         if (Sens) {
-            console.log("duplicate identifier");
+           // console.log("duplicate identifier");
             return res.status(400).json({status: "err", message: 'duplicate identifier'});
         }
-        console.log('sens :', req.body.identifier);
+        //console.log('sens :', req.body.identifier);
         let sensor = new Sensor();
         sensor.SensorIdentifier = req.body.identifier;
         sensor.SensorType = req.body.SensorType;
-        console.log(sensor);
+        //console.log(sensor);
         if (sensor) {
-            console.log(sensor);
-            console.log("Sensor have been added !");
+            //console.log(sensor);
+            //console.log("Sensor have been added !");
             NewSensor = await sensor.save();
-            console.log(NewSensor._id);
+            //console.log(NewSensor._id);
             return res.json({status: "ok", message: 'New Sensor have been added !'});
         }
 
@@ -408,29 +427,51 @@ router.post('/decrypt', async (req, res) => {
         console.log(e);
     }
 });
-function checkRules(rules,id,data) {
+async function checkRules(rules, id, data) {
     console.log('/*********************************Check Rules*********************************/');
-    console.log('rules ' ,rules );
-    if (! rules)
-    {
-        console.log('no rules');
-        return ;
+    //console.log('rules ', rules);
+    if (!rules) {
+        //console.log('no rules');
+        return;
     }
-    const rule = rules[rules.length -1] ;
-    console.log('rules ' ,rule );
+    const rule = rules[rules.length - 1];
+    //console.log('rules ', rule);
     if (rule) {
-        console.log('Sens :', rule );
-        console.log('data :',data);
-        console.log('id :',id);
+        //console.log('Sens :', rule);
+        //console.log('data :', data);
+        //console.log('id :', id);
         if (rule.Status === false) {
             console.log('rule is false no action needed ');
-        }
-        else {
-            console.log('rule is active');
-            // open relay
-            Dashboard.foo();
-            Dashboard.EmailUserrrrr('fouzai.alaa@gmail.com','hello hello it works from sensors');
-            //NotifyUser();
+        } else {
+            console.log('data.humidite ',data.humidite);
+            console.log('rule.Tmin ',rule.Tmin);
+            const now = Date.now();
+            if (rule.Tmin < data.humidite && rule.StartTime < now )
+            {
+             /// Shared.EmailUser('fouzai.alaa@gmail.com', 'subject', 'data');
+            const Loc = await Location.findOne({Sensor_ids: mongoose.Types.ObjectId(id)});
+            if (!Loc) {
+                console.log('no location');
+                return ;
+            }
+            const U = await User.findOne({Location_ids: mongoose.Types.ObjectId(Loc._id)});
+            if (!U) {
+                console.log('no User');
+                return ;
+            }
+            if (U.Notifications.Email === true)
+            {
+                Shared.EmailUser(U.email, 'Relay Update ', 'Relay is open '+Loc.SiteName);
+            }
+            if (U.Notifications.Push === true)
+            {
+                console.log('Push Notification ', U._id);
+                Shared.NotifyyUser('5e539d385957281f6470841d',{"icon":"success", "title" : "success" , "text" : "Relay is open "+Loc.SiteName} );
+            }
+            }else if((rule.Tmin > data.humidite || data.humidite < rule.Tmax) && rule.StartTime < now)
+            {
+                console.log('2nd condition');
+            }
         }
     } else {
         console.log('no rules');
@@ -457,7 +498,6 @@ function checkRules(rules,id,data) {
   'humiditéSol': 0,
   time: 1593087321094
 }*/
-
 
 
     console.log('/*********************************Check Rules*********************************/');
@@ -667,7 +707,7 @@ async function RelayAction(data, Sensor) {
     client.on('join', function (data) {
         console.log(data);
     });
-    client.emit('news','fuck you idiot /***********************************************************///');
+    client.emit('news','rtyrtyrtyrtyrtyrtyrtyrty');
 /*
         client.on('disconnect', function () {
             console.log('Client disconnected!');

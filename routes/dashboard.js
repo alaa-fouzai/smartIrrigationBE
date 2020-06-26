@@ -3,6 +3,7 @@ const router =express.Router();
 const Sensor  = require('../Models/Sensor');
 const Data  = require('../Models/Data');
 const User  = require('../Models/User');
+const Shared  = require('./shared');
 const Location  = require('../Models/Location');
 var jwt = require('jsonwebtoken');
 const https = require('https');
@@ -10,7 +11,7 @@ const querystring = require('querystring');
 const socket = require('socket.io');
 const mongoose=require('mongoose');
 const nodemailer = require('nodemailer');
-module.exports.Email = EmailUser();
+//module.exports.Email = EmailUser();
 function verifyToken(req, res, next) {
     let payload;
 
@@ -173,9 +174,16 @@ router.get('/notify', async (req , res)=>{
     if (user==={} || user===undefined)
     {return ;}
     if (user.Notifications.Push === true)
-    {NotifyUser(req.body.UserId,req.body.data );}
+    {
+        console.log('user id for notification', req.body.UserId);
+        Shared.NotifyyUser(req.body.UserId,req.body.data );
+    }
     if (user.Notifications.Email === true)
-    {EmailUser(user.email,req.body.data );}
+    {
+        console.log('user.email ',user.email);
+        console.log('req.body.data  ',req.body.data.text );
+        Shared.EmailUser(user.email, 'SmailSubject' ,req.body.data.text );
+    }
     res.json({status:"ok" , message : "notif sent" });
 
 });
@@ -1711,7 +1719,7 @@ const chat = io
     });
 Notification = [];
 const notif = io
-    .of('/dashboard/Notification')
+    .of('/dashboarddddddd/Notification')
     .on('connection', (socket) => {
         // socket.emit('getNotification', 'hello notification' );
         //console.log('notiy ' , socket.id);

@@ -23,6 +23,7 @@ const DashboardRouter = require('./routes/dashboard');
 
 
 
+
 app.use('/api/posts',postRouter);
 app.use('/api/users',UserRouter);
 app.use('/api/sensors',SensorRouter);
@@ -37,7 +38,7 @@ app.post('/',(req,res)=>{
     console.log(req.body);
     res.send(req.body);
 });
-
+/*
 try {
     const fews = io
         .of('/fews')
@@ -57,7 +58,7 @@ try {
 } catch (e) {
     console.log(e.toString());
 }
-
+*/
 
 
 
