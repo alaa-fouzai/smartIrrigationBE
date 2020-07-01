@@ -133,11 +133,20 @@ router.post('/UpdateProfile',verifyToken, async (req , res)=>{
         return res.json({status:"ok" , message : "Profile Updated \n Plz refrech the page" , response : {"user" : user}});
     } else return res.json({status:"err" , message : "Wrong Password"});
 });
-//// RelayConfiguration
-router.post('/RelayConfiguration',verifyToken, async (req , res)=>{
+//// RelayConfiguration 5465444444444444444444444444444444464654654654654654
+router.post('/ProcessConfiguration',verifyToken, async (req , res)=>{
     try {
-        console.log('relay Configuration', req.body.RelayConfiguration);
-        return res.json({status:"ok" , message : "ok" });
+        console.log('relay Configuration', req.body.ProcessState);
+        console.log('relay SensorId', req.body.SensorId);
+        Sens = await Sensor.findById(req.body.SensorId);
+        if (!Sens) {
+            return res.json({status:"err" , message : "No Sensor Found" });
+        }
+        console.log('Sensor ',Sens.Rules[Sens.Rules.length -1 ].Status);
+        Sens.Rules[Sens.Rules.length -1].Status = req.body.ProcessState;
+        await Sens.save();
+        state = req.body.ProcessState ? ' Started' :' Stopped';
+        return res.json({status:"ok" , message : "Process"+state });
     } catch (e) {
         console.log(e.toString());
     }
@@ -1808,17 +1817,16 @@ async function ChangeIrrigationState(LocationId, AccessToken, NewState) {
     await locationss.save();
 }
 async function getIrrigationState(LocationId, AccessToken) {
+try {
     return new Promise(async function(resolve, reject) {
         if (LocationId === 'none here')
         {
-            reject(new Error('no location Id'));
+            reject(console.log('no location Id'));
+            return ;
         }
-    try {
+
         payload = jwt.verify(AccessToken, process.env.token_Key);
-    } catch (e) {
-        console.log('token not verified');
-        return;
-    }
+
     if (!payload) {
         console.log('empty payload');
         return;
@@ -1837,6 +1845,10 @@ async function getIrrigationState(LocationId, AccessToken) {
     console.log('return value', await locationss.AutomaticIrrigation);
             resolve(await locationss.AutomaticIrrigation) // successfully fill promise
     })
+} catch (e) {
+    console.log('token not verified');
+    return;
+}
 }
 function NotifyUser(UserId, data) {
     console.log("UserId" , UserId);

@@ -140,6 +140,7 @@ router.post('/AddRules', verifyToken, async (req, res) => {
         });
         var timeInMillis = Date.parse(req.body.Rules[0].date) /1000;
         Sens = await Sensor.findById(req.body.SensorId).select('-data');
+        Sens.Rules[Sens.Rules.length -1 ].Status = false ;
         const rule = { Status : false , StartTime : timeInMillis , Tmax : req.body.Rules[0].TMax , Tmin : req.body.Rules[0].TMin
             , Notifications : notif , Realy_ids : req.body.Rules[0].RelaySelection};
         Sens.Rules.push(rule);
@@ -505,11 +506,23 @@ async function checkRules(rules, id, data) {
 function decrypt(data, time) {
     // console.log(data);
     // console.log('time :', Date(time));
-    temp=(parseInt(data.substring(0,4),16)/100);
-    hum =(parseInt(data.substring(4,8) , 16)/100);
-    v=(parseInt(data.substring(8,10) , 16));
-    volt = (v - process.env.Lithiom_Min_Charge)/(process.env.Lithiom_Max_Charge - process.env.Lithiom_Min_Charge) *100;
-    return({temperature : temp , humidite : hum , batterie : volt , humiditéSol : 0 , time : Date.parse(time)});
+    if (data.length === 10) {
+        temp=(parseInt(data.substring(0,4),16)/100);
+        hum =(parseInt(data.substring(4,8) , 16)/100);
+        v=(parseInt(data.substring(8,10) , 16));
+        volt = (v - process.env.Lithiom_Min_Charge)/(process.env.Lithiom_Max_Charge - process.env.Lithiom_Min_Charge) *100;
+        return({temperature : temp , humidite : hum , batterie : volt , humiditéSol : 0 , time : Date.parse(time)});
+    }
+    if (data.length === 18) {
+        hum1=(parseInt(data.substring(0,4),16)/10);
+        hum2 =(parseInt(data.substring(4,8) , 16)/10);
+        hum3=(parseInt(data.substring(8,12) , 16)/10);
+        tempSol=(parseInt(data.substring(12,16) , 16)/10);
+        v=(parseInt(data.substring(16,18) , 16));
+        volt = (v - process.env.Lithiom_Min_Charge)/(process.env.Lithiom_Max_Charge - process.env.Lithiom_Min_Charge) *100;
+        return({humdity1 : hum1 , humdity2 : hum2 , humdity3 : hum3 , temperatureSol : tempSol , batterie : volt , time : Date.parse(time)});
+    }
+
 }
 
 //******************************************Socket io****************************************************//
