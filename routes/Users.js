@@ -1,6 +1,7 @@
 const express = require('express');
 const router =express.Router();
 const User  = require('../Models/User');
+var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 
 router.post('/register',async (req,res) =>
@@ -17,16 +18,18 @@ router.post('/register',async (req,res) =>
         const NewUser =await User.find({ email : req.body.email });
         if (NewUser === undefined || NewUser.length == 0 )
         {
-            user=await user.save();
+            var salt = bcrypt.genSaltSync(10);
+            user.password = bcrypt.hashSync(user.password, salt);
+            user = await user.save();
             res.json({status:"ok" , message: 'Account Create ! You can now Login'});
             return ;
         }
-
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        console.log('hello');
+        //res.header("Access-Control-Allow-Origin", "*");
+        //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         res.json({status:"err" , message: 'Email Already Exists'});
     }catch (err) {
-        res.header("Access-Control-Allow-Headers", "*");
+        //res.header("Access-Control-Allow-Headers", "*");
         res.json({ message:err.message });
     }
 
@@ -55,8 +58,9 @@ router.post('/login',async (req,res) =>
             await res.json({status: "err", message: 'Email Does not Exists'});
             return ;
         }
-        if (NewUser[0].password !== req.body.password )
+        if (bcrypt.compareSync(NewUser[0].password, req.body.password))
         {
+
             await res.json({status:"err" , message: 'Wrong Paswword'});
             return ;
         }
