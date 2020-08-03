@@ -76,6 +76,7 @@ router.get('/sidenav',verifyToken, async (req , res)=>{
             user = await User.findById(req.userId);
             for (const item of user.Location_ids) {
                 locationss = await Location.findById(item).select('SiteName Sensor_ids');
+                console.log(locationss.toString());
                 All_User_Locations_names.push(locationss);
             }
 
@@ -84,7 +85,7 @@ router.get('/sidenav',verifyToken, async (req , res)=>{
 
 });
 router.get('/profile',verifyToken, async (req , res)=>{
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    // await new Promise(resolve => setTimeout(resolve, 5000));
     All_User_Locations = [];
     user = await User.findById(req.userId);
     for (const item of user.Location_ids) {

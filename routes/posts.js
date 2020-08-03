@@ -92,26 +92,26 @@ function getWeither(long,lat ) {
         });
     });
 }
-/*
+
 router.get('/kafka/test',async (req , res)=>{
-    // console.log('body :',req.body);
+    //console.log('body :',req.body);
     Producer = kafka.Producer,
-        client = new kafka.KafkaClient({kafkaHost: process.env.kafka_ip}),
+        client = new kafka.KafkaClient({kafkaHost: process.env.local_kafka_ip}),
         producer = new Producer(client);
         payloads = [
-            { topic: 'TestTopic', messages: JSON.stringify(req.body), partition: 0 },
+            { topic: process.env.local_kafka_Topic, messages: JSON.stringify(req.body), partition: 0 },
         ];
     producer.on('ready', function () {
         producer.send(payloads, function (err, data) {
-            // console.log(data);
+            //console.log(data);
         });
     });
         return res.status(200).json({status: "ok", message: 'message sent'});
-});*/
+});
 /*
 try {
     Consumer = kafka.Consumer,
-        client = new kafka.KafkaClient({kafkaHost: process.env.kafka_ip}),
+        client = new kafka.KafkaClient({kafkaHost: process.env.local_kafka_ip}),
         consumer = new Consumer(
             client,
             [

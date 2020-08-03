@@ -327,22 +327,23 @@ try {
             }
         );
     consumer.on('message', function (message) {
-        // console.log(message);
+        console.log(message);
+        console.log('message read');
         verify_kafka_data_message(message.value);
     });
     consumer.on('error', function (err) {
         console.log('error', err);
     });
 } catch (e) {
-    console.log(e);
+    console.log(e.toString());
 }
 
 async function verify_kafka_data_message(x) {
     var y = JSON.parse(x);
-    //console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
-    //console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
+    console.log('Sensor Id :',y.DevEUI_uplink.DevEUI);
+    console.log('Sensor data :',y.DevEUI_uplink.payload_hex);
     // decrypt
-   //console.log('y :', Object.keys(y).length);
+   console.log('y :', Object.keys(y).length);
     if (Object.keys(y).length === 1) {
         console.log('ok', 'data accepted');
         Sens = await Sensor.findOne({SensorIdentifier: y.DevEUI_uplink.DevEUI});
@@ -447,7 +448,7 @@ async function checkRules(rules, id, data) {
             console.log('data.humidite ',data.humidite);
             console.log('rule.Tmin ',rule.Tmin);
             const now = Date.now();
-            if (rule.Tmin < data.humidite && rule.StartTime < now )
+            if (rule.Tmin < data.humidite && rule.Tmax > data.humidite && rule.StartTime < now )
             {
              /// Shared.EmailUser('fouzai.alaa@gmail.com', 'subject', 'data');
             const Loc = await Location.findOne({Sensor_ids: mongoose.Types.ObjectId(id)});
@@ -469,6 +470,28 @@ async function checkRules(rules, id, data) {
                 console.log('Push Notification ', U._id);
                 Shared.NotifyyUser('5e539d385957281f6470841d',{"icon":"success", "title" : "success" , "text" : "Relay is open "+Loc.SiteName} );
             }
+            }else if (rule.Tmax < data.humidite && rule.StartTime < now )
+            {
+                /// Shared.EmailUser('fouzai.alaa@gmail.com', 'subject', 'data');
+                const Loc = await Location.findOne({Sensor_ids: mongoose.Types.ObjectId(id)});
+                if (!Loc) {
+                    console.log('no location');
+                    return ;
+                }
+                const U = await User.findOne({Location_ids: mongoose.Types.ObjectId(Loc._id)});
+                if (!U) {
+                    console.log('no User');
+                    return ;
+                }
+                if (U.Notifications.Email === true)
+                {
+                    Shared.EmailUser(U.email, 'Relay Update ', 'Relay is closing '+Loc.SiteName);
+                }
+                if (U.Notifications.Push === true)
+                {
+                    console.log('Push Notification ', U._id);
+                    Shared.NotifyyUser('5e539d385957281f6470841d',{"icon":"success", "title" : "success" , "text" : "Relay is open "+Loc.SiteName} );
+                }
             }else if((rule.Tmin > data.humidite || data.humidite < rule.Tmax) && rule.StartTime < now)
             {
                 console.log('2nd condition');

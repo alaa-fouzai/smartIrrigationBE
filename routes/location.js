@@ -55,7 +55,7 @@ router.post('/Add',verifyToken,async (req,res) =>
         user.Location_ids.push(location._id);
         await user.save();
         await location.save();
-        res.json({status:"ok" , message: 'Sensor Added', UserData : user});
+        res.json({status:"ok" , message: 'Location Added', UserData : user});
     }catch (err) {
         res.json({ message:err });
     }

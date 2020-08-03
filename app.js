@@ -8,7 +8,7 @@ const path = require('path');
 mongoose.connect(process.env.DB_CONNECTION,{ useNewUrlParser: true , useUnifiedTopology: true } ,() => console.log('connected to BD')).catch(error => handleError(error));
 const bodyParser= require('body-parser');
 
-app.use(express.static(path.join(__dirname, '../frontend/dist/AdminLTE')));
+// app.use(express.static(path.join(__dirname, '../frontend/dist/AdminLTE')));
 
 
 app.use(bodyParser.json());
